@@ -1,92 +1,113 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(DigitalPetApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
+class DigitalPetApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: DefaultTabController(
-        length: 3,
-        child: _TabsNonScrollableDemo(),
+      title: 'Digital Pet App',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+      ),
+      home: PetTabs(),
+    );
+  }
+}
+
+class PetTabs extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Digital Pet App'),
+          bottom: TabBar(
+            tabs: [
+              Tab(text: 'Dachshund'),
+              Tab(text: 'Tuxedo Cat'),
+              Tab(text: 'Husky'),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            PetScreen(petName: 'Dachshund'),
+            PetScreen(petName: 'Tuxedo Cat'),
+            PetScreen(petName: 'Husky'),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _TabsNonScrollableDemo extends StatefulWidget {
+class PetScreen extends StatefulWidget {
+  final String petName;
+
+  PetScreen({required this.petName});
+
   @override
-  __TabsNonScrollableDemoState createState() => __TabsNonScrollableDemoState();
+  _PetScreenState createState() => _PetScreenState();
 }
 
-class __TabsNonScrollableDemoState extends State<_TabsNonScrollableDemo>
-    with SingleTickerProviderStateMixin, RestorationMixin {
-  late TabController _tabController;
+class _PetScreenState extends State<PetScreen> {
+  int _hunger = 50;
+  int _happiness = 50;
 
-  final RestorableInt tabIndex = RestorableInt(0);
-
-  @override
-  String get restorationId => 'tab_non_scrollable_demo';
-
-  @override
-  void restoreState(RestorationBucket? oldBucket, bool initialRestore) {
-    registerForRestoration(tabIndex, 'tab_index');
-    _tabController.index = tabIndex.value;
+  void _feedPet() {
+    setState(() {
+      _hunger -= 10;
+      if (_hunger < 0) _hunger = 0;
+    });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(
-      initialIndex: 0,
-      length: 3,
-      vsync: this,
-    );
-    _tabController.addListener(() {
-      setState(() {
-        tabIndex.value = _tabController.index;
-      });
+  void _playWithPet() {
+    setState(() {
+      _happiness += 10;
+      if (_happiness > 100) _happiness = 100;
     });
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    tabIndex.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-// For the ToDo task hint: consider defining the widget and name of the tabs here
-    final tabs = ['Dachshund', 'Tuxedo Cat', 'Husky'];
-
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Tabs Demo',
-        ),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: false,
-          tabs: [
-            for (final tab in tabs) Tab(text: tab),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-// hint for the to do task:Considering creating the different for different tabs
-          for (final tab in tabs)
-            Center(
-              child: Text(tab),
-            ),
+          Text(widget.petName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          SizedBox(height: 20),
+          Text('Hunger: $_hunger', style: TextStyle(fontSize: 18)),
+          LinearProgressIndicator(
+            value: _hunger / 100,
+            color: Colors.red,
+            backgroundColor: Colors.red[100],
+          ),
+          SizedBox(height: 20),
+          Text('Happiness: $_happiness', style: TextStyle(fontSize: 18)),
+          LinearProgressIndicator(
+            value: _happiness / 100,
+            color: Colors.blue,
+            backgroundColor: Colors.blue[100],
+          ),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: _feedPet,
+                child: Text('Feed'),
+              ),
+              ElevatedButton(
+                onPressed: _playWithPet,
+                child: Text('Play'),
+              ),
+            ],
+          ),
         ],
       ),
     );
